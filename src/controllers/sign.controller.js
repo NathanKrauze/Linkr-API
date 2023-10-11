@@ -40,10 +40,12 @@ export async function postSignin(req, res) {
     const token = uuid();
 
     const idUser = user.rows[0].id;
+    const username = user.rows[0].username;
+    const pictureUrl = user.rows[0].pictureUrl;
 
     await postSessionDB(token, idUser);
 
-    res.status(200).send({ token: token, idUser: idUser });
+    res.status(200).send({ token, idUser, username, pictureUrl });
   } catch (err) {
     res.status(500).send(err.message);
   }
