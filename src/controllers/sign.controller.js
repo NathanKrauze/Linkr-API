@@ -1,23 +1,50 @@
+import bcrypt from "bcrypt";
+import { v4 as uuid } from "uuid";
+import { postSessionDB } from "../repository/sign.repository.js";
+import {
+  postUserDB,
+  getUserByEmailDB,
+  getUserByIdDB,
+} from "../repository/users.repository.js";
 
+export async function postSignup(req, res) {
+  const { username, email, password, pictureUrl } = req.body;
 
-export async function postSignup(req,res){
- 
   try {
- 
-        res.status(201).send();
+    const user = await getUserByEmailDB(email);
 
-      } catch (err) {
-        res.status(500).send(err.message);
-      }
+    if (user.rowCount > 0) return res.status(409).send("Email já cadastrado!");
+
+    const hash = bcrypt.hashSync(password, 10);
+
+    await postUserDB(username, email, hash, pictureUrl);
+
+    res.sendStatus(201);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 }
 
-export async function postSignin(req,res){
+export async function postSignin(req, res) {
+  const { email, password } = req.body;
 
   try {
-     
-      res.status(200).send(token);
-      
-    } catch (err) {
-      res.status(500).send(err.message);
-    }
+    const user = await getUserByEmailDB(email);
+
+    if (user.rowCount === 0)
+      return res.status(401).send("Email não encontrado. Cadastre-se!");
+
+    const correctPassword = bcrypt.compareSync(password, user.rows[0].password);
+    if (!correctPassword) return res.status(401).send("Senha incorreta!");
+
+    const token = uuid();
+
+    const idUser = user.rows[0].id;
+
+    await postSessionDB(token, idUser);
+
+    res.status(200).send({ token: token, idUser: idUser });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 }
