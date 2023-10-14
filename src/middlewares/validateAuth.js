@@ -4,14 +4,14 @@ export async function validateAuth(req, res, next) {
   const { authorization } = req.headers;
   const token = authorization?.replace("Bearer ", "");
 
-  if (!token) return res.status(401).send("Envie um token");
+  if (!token) return res.status(401).send("Send a token!");
 
   try {
     const session = await db.query(`SELECT * FROM sessions WHERE token = $1;`, [
       token,
     ]);
     if (!session.rowCount)
-      return res.status(401).send("Seu token não é válido");
+      return res.status(401).send("Your token is not valid!");
 
     res.locals.sessions = session.rows[0];
 
