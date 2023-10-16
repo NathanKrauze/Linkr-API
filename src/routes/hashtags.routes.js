@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { validateAuth } from "../middlewares/validateAuth.js";
 import {
   getTrending,
   getHashtagPosts,
@@ -7,7 +6,7 @@ import {
 
 const hashtagsRouter = Router();
 
-hashtagsRouter.get("/trending", validateAuth, getTrending);
+hashtagsRouter.get("/trending", getTrending);
 hashtagsRouter.get("/hashtag/:hashtag", getHashtagPosts);
 
 export default hashtagsRouter;
