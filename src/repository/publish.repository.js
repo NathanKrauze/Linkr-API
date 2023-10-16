@@ -47,6 +47,14 @@ export async function deletePublication(id) {
   );
 }
 
+export async function deleteHashTrend(id){
+  return db.query(
+    `DELETE FROM trends
+    WHERE "idPost" = $1;`,
+    [id]
+  );
+}
+
 export async function verifyPost(idPost) {
   return db.query(
     `SELECT id FROM posts

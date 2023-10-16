@@ -1,4 +1,5 @@
 import {
+  deleteHashTrend,
   deletePublication,
   dislikePost,
   getAllPosts,
@@ -60,6 +61,7 @@ export async function postUpdate(req, res) {
   const { postText } = req.body;
   const { id } = req.params;
   const { idUser } = res.locals.sessions;
+  const hashtags = postText.match(/#\w+/g);
 
   try {
     const userPost = await verifyUser(id);
@@ -67,7 +69,19 @@ export async function postUpdate(req, res) {
       return res.status(400).send("Did not find post");
     if (userPost.rows[0].idUser != idUser)
       return res.status(400).send("You can not edit this post");
+   
+      if (hashtags) {
+      hashtags.map(async (hash) => {
+        let existsHashtag = await getHashtagDB(hash.replace("#", ""));
 
+        if (existsHashtag.rowCount === 0) {
+          existsHashtag = await postHashtagDB(hash.replace("#", ""));
+        }
+
+        await postTrendsDB(id, existsHashtag.rows[0].id);
+      });
+    }
+    
     await updatePublish(postText, id);
 
     res.status(200).send();
@@ -90,6 +104,7 @@ export async function deletePostById(req, res) {
     if (userPost.rows[0].idUser != idUser)
       return res.status(400).send("You can not delete this post");
 
+    await deleteHashTrend(id);
     await deletePublication(id);
 
     res.status(204).send();
