@@ -1,8 +1,11 @@
 import {
   deletePublication,
+  dislikePost,
   getAllPosts,
+  likePost,
   postAtTimeline,
   updatePublish,
+  verifyPost,
   verifyUser,
 } from "../repository/publish.repository.js";
 import {
@@ -41,8 +44,6 @@ export async function postPublish(req, res) {
 export async function getTimeline(req, res) {
   try {
     const timeline = await getAllPosts();
-    if (timeline.rowCount == 0)
-      return res.status(404).send("There are no posts yet");
 
     res.status(200).send(timeline.rows);
   } catch (error) {
@@ -92,6 +93,27 @@ export async function deletePostById(req, res) {
 
     res.status(204).send();
   } catch (error) {
+    res.status(500).send(error.message);
+  }
+}
+
+
+export async function likesPost(req, res){
+  const { liked } = req.body;
+  const { idPost } = req.params;
+  const { idUser } = res.locals.sessions;
+  try{
+    const existPost = await verifyPost(idPost);
+    if( existPost.rowCount === 0 )return res.status(404).send("Did not find post");
+
+    if(liked){
+      await likePost(idUser, idPost);
+      
+    }else{
+      await dislikePost(idUser, idPost);
+    };
+    res.sendStatus(201)
+  }catch(error){
     res.status(500).send(error.message);
   }
 }
