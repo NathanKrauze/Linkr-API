@@ -10,9 +10,13 @@ export async function postAtTimeline(idUser, postUrl, postText) {
 }
 
 export async function getAllPosts() {
-  return db.query(`SELECT posts.*, users.username, users."pictureUrl" 
+  return db.query(`
+    SELECT posts.*, users.username, users."pictureUrl", COUNT("idPost")AS likes,
+      JSON_AGG(COALESCE(likes."idUser", 0))  AS "usersLikes"
     FROM posts
-	JOIN users ON users.id = posts."idUser"
+    LEFT JOIN users ON users.id = posts."idUser"
+    LEFT JOIN likes ON likes."idPost" = posts.id
+    GROUP BY posts.id, users.id
     ORDER BY "createdAt" DESC
     LIMIT 20;`);
 }
@@ -41,4 +45,28 @@ export async function deletePublication(id) {
     WHERE id = $1;`,
     [id]
   );
+}
+
+export async function verifyPost(idPost) {
+  return db.query(
+    `SELECT id FROM posts
+    WHERE id = $1`,
+    [idPost]
+  );
+}
+
+export async function likePost(idUser, idPost) {
+  return db.query(
+    `INSERT INTO likes ("idUser", "idPost")
+    VALUES($1, $2)`,
+    [idUser, idPost]
+  )
+}
+
+export async function dislikePost(idUser, idPost) {
+  return db.query(
+    `DELETE FROM likes
+    WHERE "idUser" = $1 AND "idPost" = $2`,
+    [idUser, idPost]
+  )
 }
