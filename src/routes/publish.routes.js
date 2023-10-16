@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { validateSchema } from "../middlewares/validate.schema.js";
-import { PublishSchema, UpdationSchema } from "../schemas/publish.schemas.js";
+import { PublishSchema, UpdationSchema, likeSchema } from "../schemas/publish.schemas.js";
 import { validateAuth } from "../middlewares/validateAuth.js";
-import { deletePostById, getTimeline, postPublish, postUpdate } from "../controllers/publish.controller.js";
+import { deletePostById, getTimeline, likesPost, postPublish, postUpdate } from "../controllers/publish.controller.js";
 
 
 
@@ -12,5 +12,6 @@ publishRouter.post("/publish",validateAuth, validateSchema(PublishSchema), postP
 publishRouter.get("/timeline", validateAuth, getTimeline);
 publishRouter.post("/update-post/:id", validateAuth,validateSchema(UpdationSchema), postUpdate);
 publishRouter.delete("/delete/:id", validateAuth, deletePostById);
+publishRouter.post("/like/:idPost", validateAuth, validateSchema(likeSchema) ,likesPost)
 
 export default publishRouter;

@@ -8,3 +8,7 @@ export const PublishSchema = Joi.object({
 export const UpdationSchema = Joi.object({
     postText: Joi.string().allow('')
 })
+
+export const likeSchema =Joi.object({
+    liked: Joi.boolean().required()
+})
