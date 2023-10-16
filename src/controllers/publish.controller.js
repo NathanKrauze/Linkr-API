@@ -2,6 +2,7 @@ import {
   deletePublication,
   dislikePost,
   getAllPosts,
+  getUsersLikesDB,
   likePost,
   postAtTimeline,
   updatePublish,
@@ -114,6 +115,19 @@ export async function likesPost(req, res){
     };
     res.sendStatus(201)
   }catch(error){
+    res.status(500).send(error.message);
+  }
+}
+
+export async function getUsersLikes(req, res){
+  const {idPost} =req.params;
+  try {
+    const existPost = await verifyPost(idPost);
+    if( existPost.rowCount === 0 )return res.status(404).send("Did not find post");
+
+    const usersLike = await getUsersLikesDB(idPost);
+    res.status(200).send(usersLike.rows)
+  } catch (error) {
     res.status(500).send(error.message);
   }
 }

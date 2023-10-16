@@ -12,7 +12,7 @@ export async function postAtTimeline(idUser, postUrl, postText) {
 export async function getAllPosts() {
   return db.query(`
     SELECT posts.*, users.username, users."pictureUrl", COUNT("idPost")AS likes,
-      JSON_AGG(COALESCE(likes."idUser", 0))  AS "usersLikes"
+      JSON_AGG(COALESCE((likes."idUser"), 0))  AS "usersLikes"
     FROM posts
     LEFT JOIN users ON users.id = posts."idUser"
     LEFT JOIN likes ON likes."idPost" = posts.id
@@ -50,7 +50,7 @@ export async function deletePublication(id) {
 export async function verifyPost(idPost) {
   return db.query(
     `SELECT id FROM posts
-    WHERE id = $1`,
+      WHERE id = $1`,
     [idPost]
   );
 }
@@ -58,7 +58,7 @@ export async function verifyPost(idPost) {
 export async function likePost(idUser, idPost) {
   return db.query(
     `INSERT INTO likes ("idUser", "idPost")
-    VALUES($1, $2)`,
+      VALUES($1, $2)`,
     [idUser, idPost]
   )
 }
@@ -66,7 +66,19 @@ export async function likePost(idUser, idPost) {
 export async function dislikePost(idUser, idPost) {
   return db.query(
     `DELETE FROM likes
-    WHERE "idUser" = $1 AND "idPost" = $2`,
+      WHERE "idUser" = $1 AND "idPost" = $2`,
     [idUser, idPost]
+  )
+}
+
+export async function getUsersLikesDB(idPost){
+  return db.query(
+    `SELECT users.username
+      FROM likes
+      JOIN posts ON posts.id = likes."idPost"
+      JOIN users ON users.id = likes."idUser"
+      WHERE likes."idPost" = $1
+      LIMIT 2;`,
+    [idPost]
   )
 }
