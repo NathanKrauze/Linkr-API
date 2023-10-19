@@ -47,7 +47,7 @@ export async function deletePublication(id) {
   );
 }
 
-export async function deleteHashTrend(id){
+export async function deleteHashTrend(id) {
   return db.query(
     `DELETE FROM trends
     WHERE "idPost" = $1;`,
@@ -68,7 +68,7 @@ export async function likePost(idUser, idPost) {
     `INSERT INTO likes ("idUser", "idPost")
       VALUES($1, $2)`,
     [idUser, idPost]
-  )
+  );
 }
 
 export async function dislikePost(idUser, idPost) {
@@ -76,10 +76,10 @@ export async function dislikePost(idUser, idPost) {
     `DELETE FROM likes
       WHERE "idUser" = $1 AND "idPost" = $2`,
     [idUser, idPost]
-  )
+  );
 }
 
-export async function getUsersLikesDB(idPost){
+export async function getUsersLikesDB(idPost) {
   return db.query(
     `SELECT users.username
       FROM likes
@@ -88,5 +88,5 @@ export async function getUsersLikesDB(idPost){
       WHERE likes."idPost" = $1
       LIMIT 2;`,
     [idPost]
-  )
+  );
 }
