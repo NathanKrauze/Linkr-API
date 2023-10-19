@@ -15,6 +15,7 @@ import {
   postHashtagDB,
   postTrendsDB,
 } from "../repository/hashtags.repository.js";
+import { getCommentsDB } from "../repository/comments.repository.js";
 
 export async function postPublish(req, res) {
   const { postUrl, postText } = req.body;
@@ -47,6 +48,18 @@ export async function getTimeline(req, res) {
   try {
     const timeline = await getAllPosts();
 
+    timeline.rows.map((post) => delete post.createdAt);
+
+    const comments = await getCommentsDB();
+
+    for (let i = 0; i < timeline.rows.length; i++) {
+      for (let j = 0; j < comments.rows.length; j++) {
+        if (timeline.rows[i].id === comments.rows[j].comments[0].idPost) {
+          timeline.rows[i].comments = comments.rows[j].comments;
+        }
+      }
+    }
+
     res.status(200).send(timeline.rows);
   } catch (error) {
     res
@@ -69,8 +82,8 @@ export async function postUpdate(req, res) {
       return res.status(400).send("Did not find post");
     if (userPost.rows[0].idUser != idUser)
       return res.status(400).send("You can not edit this post");
-   
-      if (hashtags) {
+
+    if (hashtags) {
       hashtags.map(async (hash) => {
         let existsHashtag = await getHashtagDB(hash.replace("#", ""));
 
@@ -81,7 +94,7 @@ export async function postUpdate(req, res) {
         await postTrendsDB(id, existsHashtag.rows[0].id);
       });
     }
-    
+
     await updatePublish(postText, id);
 
     res.status(200).send();
@@ -113,35 +126,35 @@ export async function deletePostById(req, res) {
   }
 }
 
-
-export async function likesPost(req, res){
+export async function likesPost(req, res) {
   const { liked } = req.body;
   const { idPost } = req.params;
   const { idUser } = res.locals.sessions;
-  try{
+  try {
     const existPost = await verifyPost(idPost);
-    if( existPost.rowCount === 0 )return res.status(404).send("Did not find post");
+    if (existPost.rowCount === 0)
+      return res.status(404).send("Did not find post");
 
-    if(liked){
+    if (liked) {
       await likePost(idUser, idPost);
-      
-    }else{
+    } else {
       await dislikePost(idUser, idPost);
-    };
-    res.sendStatus(201)
-  }catch(error){
+    }
+    res.sendStatus(201);
+  } catch (error) {
     res.status(500).send(error.message);
   }
 }
 
-export async function getUsersLikes(req, res){
-  const {idPost} =req.params;
+export async function getUsersLikes(req, res) {
+  const { idPost } = req.params;
   try {
     const existPost = await verifyPost(idPost);
-    if( existPost.rowCount === 0 )return res.status(404).send("Did not find post");
+    if (existPost.rowCount === 0)
+      return res.status(404).send("Did not find post");
 
     const usersLike = await getUsersLikesDB(idPost);
-    res.status(200).send(usersLike.rows)
+    res.status(200).send(usersLike.rows);
   } catch (error) {
     res.status(500).send(error.message);
   }
