@@ -17,7 +17,6 @@ export async function getPostsByUser(req, res) {
   
   export async function getUsersBySearch(req, res) {
     const searchString = req.query.searchString;
-    console.log(searchString)
     try {
       const users = await searchUsersDB(searchString);
       res.status(200).send(users.rows);
