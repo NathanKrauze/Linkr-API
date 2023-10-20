@@ -18,7 +18,7 @@ export async function getAllPosts() {
     LEFT JOIN likes ON likes."idPost" = posts.id
     GROUP BY posts.id, users.id
     ORDER BY "createdAt" DESC
-    LIMIT 20;`);
+    ;`);
 }
 
 export async function verifyUser(postId) {
