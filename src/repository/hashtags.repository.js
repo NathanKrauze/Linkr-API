@@ -32,14 +32,17 @@ export async function getHashtagDB(hashtag) {
 export async function getHashtagPostsDB(hashtag) {
   return db.query(
     `
-  SELECT posts.*, users.username, users."pictureUrl" 
-    FROM posts
-  JOIN users ON users.id = posts."idUser"
-  JOIN trends ON trends."idPost" = posts.id
-  JOIN hashtags ON hashtags.id = trends."idHashtag"
-    WHERE hashtags."hashtagText" = $1
-    ORDER BY "createdAt" DESC
-    LIMIT 20;`,
+    SELECT posts.*, users.username, users."pictureUrl", COUNT(likes."idPost")AS likes,
+        JSON_AGG(COALESCE((likes."idUser"), 0))  AS "usersLikes"
+      FROM posts
+    JOIN users ON users.id = posts."idUser"
+    JOIN trends ON trends."idPost" = posts.id
+    JOIN hashtags ON hashtags.id = trends."idHashtag"
+    LEFT JOIN likes ON likes."idPost" = posts.id
+      WHERE hashtags."hashtagText" = $1
+    GROUP BY posts.id, users.username, users."pictureUrl"
+      ORDER BY "createdAt" DESC
+      LIMIT 20;`,
     [hashtag]
   );
 }
